@@ -1,0 +1,99 @@
+@startuml To-Be Code Level
+namespace ToBe {
+
+class DeviceManager {
+  - deviceRepository: IDeviceRepository
+  - protocolFactory: IProtocolFactory
+  - commandProcessor: CommandProcessor
+  - eventPublisher: IEventPublisher
+  + registerDevice(deviceInfo: DeviceInfo): Device
+  + sendCommand(deviceId: string, command: DeviceCommand): CommandResult
+  + getDeviceStatus(deviceId: string): DeviceStatus
+  + handleDeviceEvent(event: DeviceEvent): void
+}
+
+interface IDeviceRepository {
+  + save(device: Device): void
+  + findById(deviceId: string): Device
+  + findByUser(userId: string): Device[]
+  + updateStatus(deviceId: string, status: DeviceStatus): void
+}
+
+class Device {
+  - id: string
+  - userId: string
+  - name: string
+  - type: DeviceType
+  - protocol: ProtocolType
+  - status: DeviceStatus
+  - configuration: DeviceConfig
+  + executeCommand(command: DeviceCommand): CommandResult
+  + toDTO(): DeviceDTO
+}
+
+enum DeviceType {
+  THERMOSTAT
+  LIGHT_BULB
+  CAMERA
+  GATE_CONTROLLER
+  SENSOR
+}
+
+enum ProtocolType {
+  MQTT
+  HTTP
+  ZIGBEE
+  ZWAVE
+}
+
+class DeviceCommand {
+  - deviceId: string
+  - commandType: string
+  - parameters: map[string]any
+  - timestamp: time.Time
+}
+
+class CommandResult {
+  - success: boolean
+  - message: string
+  - data: map[string]any
+}
+
+class ProtocolAdapterFactory {
+  + createAdapter(protocol: ProtocolType): IProtocolAdapter
+}
+
+interface IProtocolAdapter {
+  + connect(config: ConnectionConfig): boolean
+  + sendCommand(device: Device, command: DeviceCommand): CommandResult
+  + disconnect(): void
+}
+
+class MQTTAdapter {
+  - client: MQTTClient
+  + connect(config: ConnectionConfig): boolean
+  + sendCommand(device: Device, command: DeviceCommand): CommandResult
+}
+
+class HTTPAdapter {
+  - baseUrl: string
+  - httpClient: HttpClient
+  + connect(config: ConnectionConfig): boolean
+  + sendCommand(device: Device, command: DeviceCommand): CommandResult
+}
+
+DeviceManager --> IDeviceRepository
+DeviceManager --> ProtocolAdapterFactory
+DeviceManager --> CommandProcessor
+DeviceManager --> IEventPublisher
+ProtocolAdapterFactory --> IProtocolAdapter
+IProtocolAdapter <|.. MQTTAdapter
+IProtocolAdapter <|.. HTTPAdapter
+DeviceManager --> Device
+Device --> DeviceType
+Device --> ProtocolType
+Device --> DeviceCommand
+DeviceCommand --> CommandResult
+
+}
+@enduml

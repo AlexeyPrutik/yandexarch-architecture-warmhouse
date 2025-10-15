@@ -1,0 +1,66 @@
+@startuml To-Be Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(customer, "Клиент", "Владелец умного дома")
+Person(partner, "Партнер", "Производитель устройств")
+
+System_Boundary(ecosystem, "Экосистема Умный дом SaaS") {
+    Container(web_app, "Web Application", "React, TypeScript", "SaaS веб-приложение")
+    Container(mobile_app, "Mobile App", "React Native", "Мобильное приложение")
+    Container(api_gateway, "API Gateway", "Kong", "Единая точка входа")
+
+    Container(user_service, "User Service", "Go", "Управление пользователями")
+    Container(device_service, "Device Service", "Go", "Регистрация устройств")
+    Container(heating_service, "Heating Service", "Go", "Управление отоплением")
+    Container(lighting_service, "Lighting Service", "Go", "Управление освещением")
+    Container(security_service, "Security Service", "Go", "Ворота и наблюдение")
+    Container(scenario_service, "Scenario Engine", "Python", "Движок сценариев")
+    Container(telemetry_service, "Telemetry Service", "Go", "Сбор телеметрии")
+    Container(gateway_service, "Gateway Service", "Go", "Интеграция с партнерами")
+
+    ContainerDb(user_db, "User DB", "PostgreSQL", "Пользователи и права")
+    ContainerDb(device_db, "Device Registry", "PostgreSQL", "Реестр устройств")
+    ContainerDb(telemetry_db, "Telemetry DB", "TimescaleDB", "Метрики и телеметрия")
+    ContainerQueue(message_bus, "Message Bus", "RabbitMQ", "Асинхронная коммуникация")
+}
+
+Container_Ext(partner_api, "Partner API", "REST", "API производителей устройств")
+Container_Ext(thermostat, "Умный термостат", "Hardware", "Устройство отопления")
+Container_Ext(light_bulb, "Умная лампа", "Hardware", "Устройство освещения")
+Container_Ext(camera, "Камера наблюдения", "Hardware", "Устройство безопасности")
+
+Rel(customer, web_app, "Управляет домом", "HTTPS")
+Rel(customer, mobile_app, "Управляет с телефона", "HTTPS")
+Rel(partner, partner_api, "Интегрирует устройства", "REST")
+
+Rel(web_app, api_gateway, "API calls", "REST/GraphQL")
+Rel(mobile_app, api_gateway, "API calls", "REST/GraphQL")
+
+Rel(api_gateway, user_service, "Аутентификация", "gRPC")
+Rel(api_gateway, device_service, "Управление устройствами", "gRPC")
+Rel(api_gateway, heating_service, "Управление отоплением", "gRPC")
+Rel(api_gateway, lighting_service, "Управление освещением", "gRPC")
+Rel(api_gateway, security_service, "Управление безопасностью", "gRPC")
+Rel(api_gateway, scenario_service, "Сценарии автоматизации", "REST")
+
+Rel(device_service, heating_service, "Команды устройствам", "gRPC")
+Rel(device_service, lighting_service, "Команды устройствам", "gRPC")
+Rel(device_service, security_service, "Команды устройствам", "gRPC")
+
+Rel(heating_service, telemetry_service, "Метрики отопления", "AMQP")
+Rel(lighting_service, telemetry_service, "Метрики освещения", "AMQP")
+Rel(security_service, telemetry_service, "Метрики безопасности", "AMQP")
+
+Rel(scenario_service, message_bus, "Подписка на события", "AMQP")
+Rel(gateway_service, partner_api, "Интеграция с партнерами", "REST")
+Rel(gateway_service, device_service, "Регистрация устройств", "gRPC")
+
+Rel(user_service, user_db, "Чтение/запись", "SQL")
+Rel(device_service, device_db, "Чтение/запись", "SQL")
+Rel(telemetry_service, telemetry_db, "Запись метрик", "SQL")
+
+Rel(thermostat, heating_service, "Данные температуры", "MQTT/HTTP")
+Rel(light_bulb, lighting_service, "Статус освещения", "MQTT/HTTP")
+Rel(camera, security_service, "Видеопоток", "RTSP/HTTP")
+
+@enduml

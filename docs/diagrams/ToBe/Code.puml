@@ -1,0 +1,98 @@
+@startuml Device Management Code Level
+namespace DeviceManagement {
+
+class DeviceRegistryService {
+  - deviceRepo: IDeviceRepository
+  - catalogService: IDeviceCatalog
+  - eventBus: IEventBus
+  - statusManager: DeviceStatusManager
+  + registerDevice(deviceInfo: DeviceRegistration): Device
+  + updateDeviceStatus(deviceId: string, status: DeviceStatus): void
+  + findCompatibleDevices(requirements: CompatibilityRequirements): Device[]
+  + getDeviceProtocol(deviceId: string): ProtocolConfig
+}
+
+interface IDeviceRepository {
+  + save(device: Device): Promise<Device>
+  + findById(deviceId: string): Promise<Device>
+  + findByUser(userId: string): Promise<Device[]>
+  + updateStatus(deviceId: string, status: DeviceStatus): Promise<void>
+}
+
+class Device {
+  - id: string
+  - userId: string
+  - name: string
+  - type: DeviceType
+  - manufacturer: string
+  - model: string
+  - protocol: ProtocolType
+  - status: DeviceStatus
+  - capabilities: DeviceCapability[]
+  - configuration: DeviceConfig
+  + isCompatibleWith(requirements: CompatibilityRequirements): boolean
+  + validateConfiguration(): ValidationResult
+}
+
+class DeviceRegistration {
+  - userId: string
+  - deviceType: string
+  - manufacturer: string
+  - model: string
+  - serialNumber: string
+  - protocolConfig: ProtocolConfig
+  - capabilities: string[]
+}
+
+enum DeviceType {
+  THERMOSTAT
+  SMART_BULB
+  CAMERA
+  DOOR_SENSOR
+  GATE_CONTROLLER
+  MOTION_SENSOR
+}
+
+class DeviceStatus {
+  - online: boolean
+  - lastSeen: DateTime
+  - batteryLevel: number
+  - signalStrength: number
+  - errors: string[]
+}
+
+class ProtocolConfig {
+  - type: ProtocolType
+  - connectionString: string
+  - credentials: Map<string, string>
+  - settings: Map<string, any>
+}
+
+enum ProtocolType {
+  MQTT
+  HTTP_REST
+  ZIGBEE
+  ZWAVE
+  BLUETOOTH_LE
+}
+
+class DeviceCapability {
+  - name: string
+  - type: CapabilityType
+  - commands: string[]
+  - properties: Map<string, any>
+}
+
+DeviceRegistryService --> IDeviceRepository
+DeviceRegistryService --> IDeviceCatalog
+DeviceRegistryService --> IEventBus
+DeviceRegistryService --> DeviceStatusManager
+DeviceRegistryService --> Device
+Device --> DeviceType
+Device --> DeviceStatus
+Device --> ProtocolConfig
+Device --> DeviceCapability
+DeviceRegistration --> ProtocolConfig
+
+}
+@enduml

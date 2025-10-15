@@ -1,0 +1,28 @@
+@startuml As-Is Containers Actual
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(admin, "Администратор", "Сотрудник компании")
+
+System_Boundary(system, "Система 'Теплый дом'") {
+    Container(monolith, "Smart Home Monolith", "Go", "Очень ограниченная функциональность:\n- Получение данных датчиков\n- Обновление данных датчиков\n- Health checks")
+}
+
+Container_Ext(sensor, "Температурный датчик", "Hardware")
+
+Rel(admin, monolith, "API вызовы", "REST")
+Rel(monolith, sensor, "Чтение/обновление данных", "HTTP")
+
+note right of monolith
+РЕАЛЬНОЕ API:
+• GET /sensors/{id}/data
+• POST /sensors/{id}/data
+• GET /health
+• GET /ready
+
+ОТСУТСТВУЕТ:
+• Управление отоплением
+• Бизнес-логика
+• База данных
+end note
+
+@enduml

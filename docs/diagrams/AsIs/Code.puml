@@ -1,0 +1,53 @@
+@startuml As-Is Code Level
+namespace AsIs {
+
+class SmartHomeApp {
+  - router: *gin.Engine
+  - db: *sql.DB
+  + Run()
+  + setupRoutes()
+}
+
+class SensorHandler {
+  - db: *sql.DB
+  + GetSensorData(c *gin.Context)
+  + UpdateSensorData(c *gin.Context)
+  + ControlHeating(c *gin.Context)
+}
+
+class HeatingController {
+  - db: *sql.DB
+  + SetTemperature(target float64)
+  + GetCurrentTemperature() float64
+  + TurnOn()
+  + TurnOff()
+}
+
+class HealthHandler {
+  + HealthCheck(c *gin.Context)
+  + ReadyCheck(c *gin.Context)
+}
+
+class Sensor {
+  - ID: string
+  - Temperature: float64
+  - Location: string
+  - LastUpdate: time.Time
+  + ReadTemperature() float64
+}
+
+class DatabaseConfig {
+  - connectionString: string
+  + Connect() *sql.DB
+  + Migrate() error
+}
+
+SmartHomeApp --> SensorHandler
+SmartHomeApp --> HeatingController
+SmartHomeApp --> HealthHandler
+SensorHandler --> Sensor
+SensorHandler --> DatabaseConfig
+HeatingController --> DatabaseConfig
+
+}
+@enduml

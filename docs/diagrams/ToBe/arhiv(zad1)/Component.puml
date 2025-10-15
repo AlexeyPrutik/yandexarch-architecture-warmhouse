@@ -1,0 +1,43 @@
+@startuml To-Be Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(device_service, "Device Service") {
+    Component(device_api, "Device API", "gRPC", "Внешний API")
+    Component(device_manager, "Device Manager", "Go", "Управление устройствами")
+    Component(protocol_adapter, "Protocol Adapter", "Go", "Адаптер протоколов")
+    Component(command_processor, "Command Processor", "Go", "Обработчик команд")
+    Component(device_repository, "Device Repository", "Go", "Доступ к данным")
+
+    Component(mqtt_adapter, "MQTT Adapter", "Go", "Поддержка MQTT")
+    Component(http_adapter, "HTTP Adapter", "Go", "Поддержка HTTP")
+    Component(zigbee_adapter, "Zigbee Adapter", "Go", "Поддержка Zigbee")
+}
+
+Container_Boundary(scenario_service, "Scenario Engine") {
+    Component(scenario_api, "Scenario API", "REST", "API сценариев")
+    Component(rule_engine, "Rule Engine", "Python", "Движок правил")
+    Component(event_processor, "Event Processor", "Python", "Обработчик событий")
+    Component(action_executor, "Action Executor", "Python", "Исполнитель действий")
+    Component(scenario_repository, "Scenario Repository", "Python", "Хранилище сценариев")
+}
+
+ContainerDb(device_db, "Device Registry", "PostgreSQL")
+ContainerQueue(message_bus, "Message Bus", "RabbitMQ")
+
+Rel(device_api, device_manager, "HTTP/gRPC")
+Rel(device_manager, protocol_adapter, "Преобразование протоколов")
+Rel(protocol_adapter, mqtt_adapter, "Использует")
+Rel(protocol_adapter, http_adapter, "Использует")
+Rel(protocol_adapter, zigbee_adapter, "Использует")
+Rel(device_manager, command_processor, "Выполнение команд")
+Rel(device_manager, device_repository, "CRUD операции")
+Rel(device_repository, device_db, "SQL запросы")
+
+Rel(scenario_api, rule_engine, "Создание/изменение правил")
+Rel(event_processor, message_bus, "Подписка на события", "AMQP")
+Rel(event_processor, rule_engine, "Активация правил")
+Rel(rule_engine, action_executor, "Триггер действий")
+Rel(action_executor, device_api, "Выполнение команд", "gRPC")
+Rel(rule_engine, scenario_repository, "Загрузка правил")
+
+@enduml

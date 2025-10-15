@@ -1,0 +1,23 @@
+@startuml As-Is Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(monolith, "Smart Home Monolith") {
+    Component(web_api, "Web API", "Gin Framework", "REST API endpoints")
+    Component(sensor_handler, "Sensor Handler", "Go", "Обработчик датчиков")
+    Component(heating_controller, "Heating Controller", "Go", "Контроллер отопления")
+    Component(health_check, "Health Check", "Go", "Проверка работоспособности")
+    Component(data_model, "Data Model", "Go", "Модели данных")
+    Component(db_layer, "Database Layer", "Go", "Слой работы с БД")
+}
+
+ContainerDb(postgres, "Database", "PostgreSQL")
+
+Rel(web_api, sensor_handler, "HTTP запросы")
+Rel(web_api, heating_controller, "HTTP запросы")
+Rel(web_api, health_check, "HTTP запросы")
+Rel(sensor_handler, data_model, "Использует")
+Rel(heating_controller, data_model, "Использует")
+Rel(data_model, db_layer, "Преобразование данных")
+Rel(db_layer, postgres, "SQL запросы")
+
+@enduml

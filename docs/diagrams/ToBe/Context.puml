@@ -1,0 +1,24 @@
+@startuml To-Be Extended Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(home_owner, "Владелец дома", "Самостоятельно настраивает систему")
+Person(installer, "Установщик", "Настраивает оборудование у клиентов")
+Person(partner, "Партнер", "Производитель устройств")
+Person(analyst, "Аналитик", "Анализирует использование системы")
+
+System(ecosystem, "Экосистема 'Умный дом'", "Расширенная SaaS платформа:\n• Управление всеми умными устройствами\n• Автоматизация сценариев\n• Интеграция партнерских устройств\n• Аналитика и отчеты")
+
+System_Ext(existing_homes, "Существующие дома", "Уже имеют базовые датчики")
+System_Ext(new_homes, "Новые дома", "Требуют установки оборудования")
+System_Ext(partner_ecosystem, "Экосистема партнеров", "Устройства различных производителей")
+
+Rel(home_owner, ecosystem, "Управляет устройствами\nнастраивает сценарии")
+Rel(installer, ecosystem, "Регистрирует устройства\nнастраивает систему")
+Rel(partner, ecosystem, "Интегрирует устройства\nполучает аналитику")
+Rel(analyst, ecosystem, "Анализирует метрики\nоптимизирует сервисы")
+
+Rel(ecosystem, existing_homes, "Подключает существующие\nдатчики и реле")
+Rel(ecosystem, new_homes, "Предлагает оборудование\nдля установки")
+Rel(ecosystem, partner_ecosystem, "Стандартизирует\nпротоколы взаимодействия")
+
+@enduml

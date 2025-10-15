@@ -1,0 +1,97 @@
+@startuml To-Be Extended Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь", "Владелец умного дома")
+Person(installer, "Установщик", "Сотрудник или партнер")
+Person(partner, "Партнер", "Производитель устройств")
+
+System_Boundary(ecosystem, "Расширенная экосистема Умный дом") {
+    Container(web_app, "Web Application", "React, TypeScript", "SaaS веб-приложение")
+    Container(mobile_app, "Mobile App", "React Native", "Мобильное приложение")
+    Container(api_gateway, "API Gateway", "Kong", "Единая точка входа")
+
+    ' Core Services
+    Container(user_service, "User Service", "Go", "Управление пользователями")
+    Container(device_registry, "Device Registry", "Go", "Каталог и статусы устройств")
+    Container(command_dispatcher, "Command Dispatcher", "Go", "Маршрутизация команд")
+    Container(telemetry_collector, "Telemetry Collector", "Go", "Сбор телеметрии")
+
+    ' Business Services
+    Container(heating_service, "Heating Service", "Go", "Управление отоплением")
+    Container(lighting_service, "Lighting Service", "Go", "Управление освещением")
+    Container(security_service, "Security Service", "Go", "Безопасность и наблюдение")
+    Container(gateway_service, "Gateway Service", "Go", "Интеграция с партнерами")
+
+    ' Infrastructure Services
+    Container(scenario_engine, "Scenario Engine", "Python", "Движок сценариев")
+    Container(notification_service, "Notification Service", "Go", "Уведомления")
+    Container(analytics_service, "Analytics Service", "Python", "Аналитика и отчеты")
+    Container(provisioning_service, "Provisioning Service", "Go", "Настройка устройств")
+
+    ' Data Stores
+    ContainerDb(user_db, "User DB", "PostgreSQL", "Пользователи и права")
+    ContainerDb(device_db, "Device DB", "PostgreSQL", "Реестр устройств")
+    ContainerDb(telemetry_db, "Telemetry DB", "TimescaleDB", "Метрики и телеметрия")
+    ContainerDb(scenario_db, "Scenario DB", "MongoDB", "Сценарии и правила")
+    ContainerQueue(message_bus, "Message Bus", "RabbitMQ", "Асинхронная коммуникация")
+}
+
+' External Systems
+Container_Ext(partner_api, "Partner API", "REST", "API производителей")
+Container_Ext(existing_sensors, "Существующие датчики", "Hardware", "Уже установленное оборудование")
+Container_Ext(new_devices, "Новые устройства", "Hardware", "Дополнительное оборудование")
+
+' User Interactions
+Rel(user, web_app, "Управляет домом", "HTTPS")
+Rel(user, mobile_app, "Управляет с телефона", "HTTPS")
+Rel(installer, web_app, "Настраивает оборудование", "HTTPS")
+Rel(partner, partner_api, "Интегрирует устройства", "REST")
+
+' API Gateway Connections
+Rel(web_app, api_gateway, "API calls", "REST/GraphQL")
+Rel(mobile_app, api_gateway, "API calls", "REST/GraphQL")
+
+' Core Service Interactions
+Rel(api_gateway, user_service, "Аутентификация", "gRPC")
+Rel(api_gateway, device_registry, "Управление устройствами", "gRPC")
+Rel(api_gateway, command_dispatcher, "Отправка команд", "gRPC")
+Rel(api_gateway, scenario_engine, "Управление сценариями", "REST")
+
+' Business Logic Flow
+Rel(device_registry, command_dispatcher, "Маршрутизация команд", "gRPC")
+Rel(command_dispatcher, heating_service, "Команды отопления", "gRPC")
+Rel(command_dispatcher, lighting_service, "Команды освещения", "gRPC")
+Rel(command_dispatcher, security_service, "Команды безопасности", "gRPC")
+
+' Telemetry and Events
+Rel(heating_service, telemetry_collector, "Метрики отопления", "AMQP")
+Rel(lighting_service, telemetry_collector, "Метрики освещения", "AMQP")
+Rel(security_service, telemetry_collector, "Метрики безопасности", "AMQP")
+Rel(telemetry_collector, message_bus, "Публикация событий", "AMQP")
+
+' Scenario Engine Integration
+Rel(scenario_engine, message_bus, "Подписка на события", "AMQP")
+Rel(scenario_engine, command_dispatcher, "Автоматические команды", "gRPC")
+
+' Partner Integration
+Rel(gateway_service, partner_api, "Интеграция с партнерами", "REST")
+Rel(gateway_service, device_registry, "Регистрация устройств", "gRPC")
+Rel(gateway_service, provisioning_service, "Настройка устройств", "gRPC")
+
+' Device Communications
+Rel(heating_service, existing_sensors, "Управление отоплением", "MQTT/HTTP")
+Rel(lighting_service, new_devices, "Управление освещением", "MQTT/HTTP")
+Rel(security_service, new_devices, "Управление безопасностью", "MQTT/HTTP")
+
+' Database Connections
+Rel(user_service, user_db, "Чтение/запись", "SQL")
+Rel(device_registry, device_db, "Чтение/запись", "SQL")
+Rel(telemetry_collector, telemetry_db, "Запись метрик", "SQL")
+Rel(scenario_engine, scenario_db, "Хранение сценариев", "Document")
+
+' Additional Services
+Rel(notification_service, message_bus, "Подписка на уведомления", "AMQP")
+Rel(analytics_service, telemetry_db, "Анализ данных", "SQL")
+Rel(provisioning_service, device_registry, "Регистрация устройств", "gRPC")
+
+@enduml
