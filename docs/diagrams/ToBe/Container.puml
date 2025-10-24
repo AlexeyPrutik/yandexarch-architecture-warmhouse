@@ -1,0 +1,54 @@
+@startuml
+title Warmhouse To-Be Container Diagram
+
+top to bottom direction
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "User", "Владелец домов, управляет устройствами через web/mobile")
+Person(admin, "Administrator", "Администратор системы")
+
+System_Boundary(warmhouse, "Warmhouse Ecosystem") {
+  Container(apiGateway, "API Gateway", "Nginx", "Единая точка входа для всех запросов")
+  Container(authService, "Auth Service", "Go ", "Аутентификация, авторизация, хранение пользователей и ролей")
+  Container(coreService, "Core Service", "Go", "Агрегированная информация о домах, пользователях, устройствах")
+  Container(heatingService, "Heating Service", "Go", "Управление отоплением")
+  Container(lightingService, "Lighting Service", "Go", "Управление освещением")
+  Container(signalingService, "Signaling Service", "Go", "Управление сигнализацией")
+  Container(databaseCluster, "PostgreSQL Cluster", "PostgreSQL", "Общий кластер БД с отдельными схемами")
+  Container(kafka,  "Message Broker", "Kafka", "Событийное взаимодействие между сервисами")
+}
+
+System_Ext(sensors, "Smart Devices / Sensors", "Физические устройства, датчики")
+
+' Пользовательский и админский доступ
+Rel(user, apiGateway, "HTTP/HTTPS запросы (Web/Mobile)", "REST/JSON")
+Rel(admin, apiGateway, "HTTP/HTTPS запросы (Admin UI)", "REST/JSON")
+
+' API Gateway проксирует запросы
+Rel(apiGateway, authService, "Запросы аутентификации / авторизации")
+Rel(apiGateway, coreService, "Бизнес-запросы SmartHome API")
+Rel(apiGateway, heatingService, "REST проксирование")
+Rel(apiGateway, lightingService, "REST проксирование")
+Rel(apiGateway, signalingService, "REST проксирование")
+
+' CoreService хранит агрегированную информацию
+Rel(coreService, databaseCluster, "core_schema: дома, пользователи, агрегированная информация")
+
+' Сервисы управляют своими данными в отдельных схемах
+Rel(heatingService, databaseCluster, "heating_schema: состояние отопления, логи, сценарии")
+Rel(lightingService, databaseCluster, "lighting_schema: состояние света, сценарии, логи")
+Rel(signalingService, databaseCluster, "gates_schema: состояние сигнализации, лог действий, сценарии")
+Rel(authService, databaseCluster, "user_schema: пользователи и пароли]")
+
+' События через Kafka
+Rel(heatingService, kafka, "Публикует события о состоянии отопления")
+Rel(lightingService, kafka, "Публикует события об освещении")
+Rel(signalingService, kafka, "Публикует события управления воротами")
+Rel(kafka, coreService, "CoreService слушает события и обновляет агрегированную информацию")
+
+' Сервисы взаимодействуют с физическими устройствами
+Rel(heatingService, sensors, "Запросы к физическим устройствам", "REST/HTTP")
+Rel(lightingService, sensors, "Запросы к устройствам", "REST/HTTP")
+Rel(signalingService, sensors, "Запросы управления сигнализацией", "REST/HTTP")
+
+@enduml

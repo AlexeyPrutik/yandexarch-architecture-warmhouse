@@ -1,0 +1,24 @@
+@startuml
+title Signaling Service - Component Diagram
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(signalingBoundary, "Signaling Service", "Go") {
+
+    Component(signalingController, "SignalingController", "REST API", "Обрабатывает HTTP-запросы и возвращает данные по освещению")
+    Component(signalingService, "SignalingService", "Go", "Бизнес-логика управления светом")
+    Component(signalingRepository, "SignalingRepository", "Go", "Слой доступа к БД")
+    Component(messageSendingService, "MessageSendingService", "Go", "Сервис отправки сообщений в кафку")
+
+    Rel(signalingController, signalingService, "Вызывает бизнес методы для получения/обновления данных")
+    Rel(signalingService, signalingRepository, "Вызывает методы доступа к БД")
+    Rel(signalingService, messageSendingService, "Вызывает методы отправки сообщений о состоянии освещения")
+}
+
+Container(database, "DB", "PostgreSQL", "База данных (schema = signaling)")
+Container(kafka,  "Message Broker", "Kafka", "Событийное взаимодействие между сервисами")
+
+Rel(messageSendingService, kafka, "Публикует события о состоянии освещения в доме")
+Rel(signalingRepository, database, "Чтение/запись данных из БД")
+
+@enduml

@@ -1,0 +1,59 @@
+@startuml
+title Signaling Service - Code Diagram
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+class SignalingController {
+    +RegisterSignaling(userId: string, signalingData: signalingInput)
+    +DeleteSignaling(userId: string, signalingId: string)
+    +StartSignaling(userId: string, signalingId: string)
+    +StopSignaling(userId: string, signalingId: string)
+    +GetSignalingStatus(userId: string, signalingId: string)
+}
+
+class SignalingService {
+    +registerSignaling(userId: string, SignalingData: SignalingInput)
+    +deleteSignaling(userId: string, signalingId: string)
+    +openSignaling(userId: string, signalingId: string)
+    +closeSignaling(userId: string, signalingId: string)
+    +getSignalingStatus(userId: string, signalingId: string)
+}
+
+class SignalingRepository {
+    +findById(signalingId: string): Signaling
+    +save(signaling: Signaling)
+    +delete(signalingId: string)
+}
+
+class DeviceStatePublisher {
+    +publishDeviceState(device: DeviceStateEvent)
+}
+
+class Signaling {
+    -id: string
+    -ownerId: string
+    -status: string
+    -name: string
+    -homeId: string
+}
+
+class SignalingInput {
+    +name: string
+    +homeId: string
+}
+
+class DeviceStateEvent {
+    +device_id: string
+    +home_id: string
+    +device_name: string
+    +device_type: string
+    +status: string
+    +last_updated: timestamp
+}
+
+SignalingController --> SignalingService : вызывает методы бизнес-логики
+SignalingService --> SignalingRepository : проверка, сохранение и удаление данных
+SignalingService --> DeviceStatePublisher : публикует состояние устройства
+SignalingRepository --> Signaling : возвращает данные о сигнализации
+
+@enduml

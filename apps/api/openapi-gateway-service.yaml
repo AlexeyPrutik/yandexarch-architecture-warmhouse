@@ -1,0 +1,304 @@
+openapi: 3.1.0
+info:
+  title: Warmhouse API Gateway
+  version: "1.0.0"
+paths:
+  /auth/login:
+    post:
+      summary: Логин пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: JWT токен
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Неверные учетные данные
+
+  /users/register:
+    post:
+      summary: Регистрация нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Идентификатор созданного пользователя
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /homes:
+    get:
+      summary: Получение информации о домах пользователя
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Список домов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    address:
+                      type: string
+
+  /heating/status:
+    get:
+      summary: Получение статуса отопления
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Текущий статус отопления
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  temperature:
+                    type: number
+                  mode:
+                    type: string
+
+  /heating/devices:
+    post:
+      summary: Зарегистрировать устройство отопления
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceId:
+                  type: string
+                deviceName:
+                  type: string
+      responses:
+        '200':
+          description: Устройство зарегистрировано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deviceId:
+                    type: string
+    delete:
+      summary: Удалить устройство отопления
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: deviceId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Устройство удалено
+
+  /lighting/status:
+    get:
+      summary: Получение статуса освещения
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Текущий статус освещения
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lightsOn:
+                    type: boolean
+                  brightness:
+                    type: integer
+
+  /lighting/devices:
+    post:
+      summary: Зарегистрировать устройство освещения
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceId:
+                  type: string
+                deviceName:
+                  type: string
+      responses:
+        '200':
+          description: Устройство зарегистрировано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deviceId:
+                    type: string
+    delete:
+      summary: Удалить устройство освещения
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: deviceId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Устройство удалено
+
+  /signaling/start:
+    post:
+      summary: Запустить сигнализацию
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                signalingId:
+                  type: string
+      responses:
+        '200':
+          description: Сигнализация запущена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignalingStatus'
+
+  /signaling/stop:
+    post:
+      summary: Выключить сигнализацию
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                signalingId:
+                  type: string
+      responses:
+        '200':
+          description: Сигнализация выключена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignalingStatus'
+
+  /signalings/status/{signalingId}:
+    get:
+      summary: Получить статус сигнализации
+      parameters:
+        - name: signalingId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Статус сигнализации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignalingStatus'
+
+  /signalings/devices:
+    post:
+      summary: Зарегистрировать устройство сигнализации
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                signalingId:
+                  type: string
+                deviceName:
+                  type: string
+      responses:
+        '200':
+          description: Устройство зарегистрировано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  signalingId:
+                    type: string
+    delete:
+      summary: Удалить устройство сигнализации
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: signalingId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Устройство удалено
+
+components:
+  schemas:
+    SignalingStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          example: open

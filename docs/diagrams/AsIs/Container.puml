@@ -1,0 +1,23 @@
+@startuml As-Is Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(admin, "Администратор", "Сотрудник компании")
+Person(user, "Пользователь", "Владелец системы")
+
+System_Boundary(system, "Система 'Теплый дом'") {
+    Container(web_app, "Web Interface", "HTML, JavaScript", "Веб-интерфейс управления")
+    Container(monolith, "Smart Home", "Go", "Монолитное приложение")
+    ContainerDb(postgres, "Database", "PostgreSQL", "Хранилище данных")
+}
+
+Container_Ext(sensor, "Температурный датчик", "Hardware", "Датчик температуры")
+Container_Ext(heater, "Отопительный прибор", "Hardware", "Устройство отопления")
+
+Rel(admin, web_app, "Настраивает систему", "HTTPS")
+Rel(user, web_app, "Управляет отоплением", "HTTPS")
+Rel(web_app, monolith, "API вызовы", "REST")
+Rel(monolith, postgres, "Чтение/запись данных", "SQL")
+Rel(monolith, sensor, "Опрашивает температуру", "HTTP/MQTT")
+Rel(monolith, heater, "Управляет отоплением", "HTTP/MQTT")
+
+@enduml

@@ -1,0 +1,41 @@
+@startuml Device Registry Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(device_registry, "Device Registry Service") {
+    Component(device_api, "Device API", "gRPC", "Внешний API для управления устройствами")
+    Component(device_manager, "Device Manager", "Go", "Управление жизненным циклом устройств")
+    Component(device_catalog, "Device Catalog", "Go", "Каталог поддерживаемых устройств")
+    Component(status_tracker, "Status Tracker", "Go", "Отслеживание статуса устройств")
+    Component(device_repository, "Device Repository", "Go", "Доступ к данным устройств")
+    Component(event_publisher, "Event Publisher", "Go", "Публикация событий устройств")
+
+    Component(protocol_resolver, "Protocol Resolver", "Go", "Определение протоколов устройств")
+    Component(compatibility_checker, "Compatibility Checker", "Go", "Проверка совместимости")
+}
+
+ContainerDb(device_db, "Device Database", "PostgreSQL")
+ContainerQueue(message_bus, "Message Bus", "RabbitMQ")
+
+' Internal interactions
+Rel(device_api, device_manager, "API вызовы", "gRPC")
+Rel(device_manager, device_catalog, "Проверка устройств")
+Rel(device_manager, protocol_resolver, "Определение протокола")
+Rel(device_manager, compatibility_checker, "Проверка совместимости")
+Rel(device_manager, status_tracker, "Обновление статуса")
+Rel(device_manager, device_repository, "CRUD операции")
+Rel(device_manager, event_publisher, "Публикация событий")
+
+' External interactions
+Rel(device_repository, device_db, "SQL запросы")
+Rel(event_publisher, message_bus, "Публикация событий", "AMQP")
+
+' Component responsibilities note
+note right of device_manager
+Ответственности:
+• Регистрация новых устройств
+• Валидация конфигурации
+• Управление состоянием
+• Координация компонентов
+end note
+
+@enduml

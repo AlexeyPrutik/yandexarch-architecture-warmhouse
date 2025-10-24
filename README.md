@@ -8,37 +8,53 @@
 
 Чтобы составить документ с описанием текущей архитектуры приложения, можно часть информации взять из описания компании и условия задания. Это нормально.
 
-</aside
+</aside>
 
 ### 1. Описание функциональности монолитного приложения
 
 **Управление отоплением:**
 
-- Пользователи могут…
-- Система поддерживает…
-- …
+- Пользователи могут включать/отключать отопление в доме
+- Пользователи могут задавать температуру в доме
+-
+- Система поддерживает управление датчиками(создание, обновление, удаление,
+  получение информации о всех датчиках и получение информации конкретного датчика по id)
+- Система поддерживает обновление значений датчиков(температуру и статус)
 
 **Мониторинг температуры:**
 
-- Пользователи могут…
-- Система поддерживает…
-- …
+- Пользователи могут получать данные о температуре в доме
+- Система поддерживает получение информации о температуре в доме по id датчик
 
 ### 2. Анализ архитектуры монолитного приложения
 
-Перечислите здесь основные особенности текущего приложения: какой язык программирования используется, какая база данных, как организовано взаимодействие между компонентами и так далее.
+Язык программирования: Go (основная бизнес-логика), REST API для внешних запросов.
+База данных: PostgreSQL (одна таблица sensors для датчиков).
+Взаимодействие компонентов: SensorsHandler обрабатывает HTTP-запросы и вызывает сервисный слой (TemperatureService и RepositoryLayer).
+TemperatureService получает данные о температуре через REST-запросы к Python-сервису TemperatureApp.
+RepositoryLayer выполняет CRUD-операции с PostgreSQL.
+Особенности:
+Монолит объединяет управление сенсорами и логику работы с температурой.
+Взаимодействие с внешним Python-сервисом выполняется синхронно через REST.
 
 ### 3. Определение доменов и границы контекстов
 
-Опишите здесь домены, которые вы выделили.
+Sensors (Сенсоры)
+Описание: Управление сенсорами, CRUD операции, получение текущего состояния.
+Компоненты:
+SensorsHandler — HTTP обработчик запросов к сенсорам
+RepositoryLayer — слой доступа к базе данных (технический компонент, поддержка домена)
+Database — хранение информации о сенсорах (инфраструктура)
+
+Temperature (Температура / Мониторинг)
+Описание: Получение актуальных данных о температуре с устройств.
+Компоненты:
+TemperatureService — бизнес-логика по обработке температурных данных
 
 ### **4. Проблемы монолитного решения**
 
-- …
-- …
-- …
-
-Если вы считаете, что текущее решение не вызывает проблем, аргументируйте свою позицию.
+Масштабирование: нельзя масштабировать отдельно обработку сенсоров или температурные вычисления.
+Надёжность: сбой одного сервиса сломает всю систему.
 
 ### 5. Визуализация контекста системы — диаграмма С4
 
@@ -46,35 +62,61 @@
 
 Чтобы добавить ссылку в файл Readme.md, нужно использовать синтаксис Markdown. Это делают так:
 
+Монолит:
 ```markdown
-[Текст ссылки](URL)
+[Диаграмма Контекста](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/warmhouse/docs/diagrams/AsIs/Context.puml)
 ```
-
-Замените `Текст ссылки` текстом, который хотите использовать для ссылки. Вместо `URL` вставьте адрес, на который должна вести ссылка. Например:
-
 ```markdown
-[Посетите Яндекс](https://ya.ru/)
+[Диаграмма Контейнеров](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/AsIs/Container.puml)
 ```
-
+```markdown
+[Диаграмма Компонентов](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/AsIs/Component.puml)
+```
+```markdown
+[Диаграмма Кода](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/AsIs/Code.puml)
+```
 # Задание 2. Проектирование микросервисной архитектуры
 
 В этом задании вам нужно предоставить только диаграммы в модели C4. Мы не просим вас отдельно описывать получившиеся микросервисы и то, как вы определили взаимодействия между компонентами To-Be системы. Если вы правильно подготовите диаграммы C4, они и так это покажут.
 
 **Диаграмма контейнеров (Containers)**
 
-Добавьте диаграмму.
+```markdown
+[Диаграмма Контейнеров](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/warmhouse/docs/diagrams/ToBe/Container.puml)
+```
 
 **Диаграмма компонентов (Components)**
 
-Добавьте диаграмму для каждого из выделенных микросервисов.
+```markdown
+[Диаграмма Компонентов](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/ToBe/Component-api-gateway.puml)
+```
+```markdown
+[Диаграмма Компонентов](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/ToBe/Component-auth-service.puml)
+```
+```markdown
+[Диаграмма Компонентов](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/ToBe/Component-core-service.puml)
+```
+```markdown
+[Диаграмма Компонентов](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/ToBe/Component-heating-service.puml)
+```
+```markdown
+[Диаграмма Компонентов](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/ToBe/Component-lighting-service.puml)
+```
+```markdown
+[Диаграмма Компонентов](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/ToBe/Component-signalling-service.puml)
+```
 
 **Диаграмма кода (Code)**
 
-Добавьте одну диаграмму или несколько.
+```markdown
+[Диаграмма Кода](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/ToBe/Code-signaling-service.puml)
+```
 
 # Задание 3. Разработка ER-диаграммы
 
-Добавьте сюда ER-диаграмму. Она должна отражать ключевые сущности системы, их атрибуты и тип связей между ними.
+```markdown
+[ER-диаграмма](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/ToBe/ER.puml)
+```
 
 # Задание 4. Создание и документирование API
 
@@ -82,10 +124,29 @@
 
 Укажите, какой тип API вы будете использовать для взаимодействия микросервисов. Объясните своё решение.
 
+Будет использоваться синхронный API на основе протокола HTTP. 
+Выбран так как соответствует нефункциональным требованиям.
+
 ### 2. Документация API
 
 Здесь приложите ссылки на документацию API для микросервисов, которые вы спроектировали в первой части проектной работы. Для документирования используйте Swagger/OpenAPI или AsyncAPI.
 
+Описание OpenAPI:
+```markdown
+[Cервис аутентификации](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/apps/api/openapi-auth-service.yaml)
+```
+```markdown
+[Сервис API Gateway](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/apps/api/openapi-gateway-service.yaml)
+```
+```markdown
+[Сервис Управления отоплением](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/apps/api/openapi-heating-service.yaml)
+```
+```markdown
+[Сервис Управления освещением](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/apps/api/openapi-lighting-service.yaml)
+```
+```markdown
+[Сore сервис умного дома](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/apps/api/openapi-core-service.yaml)
+```
 # Задание 5. Работа с docker и docker-compose
 
 Перейдите в apps.
