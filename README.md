@@ -64,7 +64,7 @@ TemperatureService — бизнес-логика по обработке тем�
 
 Монолит:
 ```markdown
-[Диаграмма Контекста](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/warmhouse/docs/diagrams/AsIs/Context.puml)
+[Диаграмма Контекста](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/AsIs/Context.puml)
 ```
 ```markdown
 [Диаграмма Контейнеров](https://github.com/AlexeyPrutik/yandexarch-architecture-warmhouse/blob/main/docs/diagrams/AsIs/Container.puml)
