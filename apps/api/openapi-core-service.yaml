@@ -95,7 +95,7 @@ components:
           type: string
         type:
           type: string
-          description: Тип устройства (heating, lighting, gate, camera)
+          description: Тип устройства (heating, lighting, signaling, camera)
         status:
           type: string
 

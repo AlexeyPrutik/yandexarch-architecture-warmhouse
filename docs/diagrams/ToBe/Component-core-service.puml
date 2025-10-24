@@ -1,0 +1,37 @@
+@startuml
+title Core Service - Component Diagram
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+
+Container_Boundary(coreSystem, "Core Service") {
+
+    Container(database, "DB", "PostgreSQL", "База данных(schema = core)")
+
+    Component(coreController, "CoreController", "REST API", "Обрабатывает HTTP-запросы от пользователя и администратора")
+    Component(coreService, "CoreService", "Go", "Бизнес-логика управления домом")
+    Component(eventListener, "EventListener", "Kafka Consumer", "Слушает события от Heating, Lighting, Signaling")
+
+    Component(heatingProcessor, "HeatingEventProcessor", "Go", "Обработка событий отопления")
+    Component(lightingProcessor, "LightingEventProcessor", "Go", "Обработка событий освещения")
+    Component(signalingProcessor, "SignalingEventProcessor", "Go", "Обработка событий сигнализации")
+
+    Component(coreRepository, "CoreRepository", "DB Access Layer", "Доступ к core_schema в PostgreSQL")
+
+}
+
+
+Rel(coreController, coreService, "Вызывает методы для получения/обновления данных")
+
+Rel(eventListener, heatingProcessor, "Передает события отопления")
+Rel(eventListener, lightingProcessor, "Передает события освещения")
+Rel(eventListener, signalingProcessor, "Передает события сигнализации")
+
+Rel(coreService, coreRepository, "Чтение/запись агрегированной информации")
+
+Rel(heatingProcessor, coreRepository, "Обновление состояния отопления")
+Rel(lightingProcessor, coreRepository, "Обновление состояния освещения")
+Rel(signalingProcessor, coreRepository, "Обновление состояния сигнализации")
+Rel(coreRepository, database, "Чтение/запись данных из бд")
+
+@enduml

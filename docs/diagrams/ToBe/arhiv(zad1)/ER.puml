@@ -1,0 +1,171 @@
+plantuml
+@startuml SmartHome ER Diagram
+!define ENTITY class
+!define PRIMARY_KEY {field}
+!define FOREIGN_KEY {method}
+
+hide methods
+hide empty members
+
+' ========== CORE ENTITIES ==========
+
+ENTITY User {
+  PRIMARY_KEY id: UUID
+  email: VARCHAR(255)
+  password_hash: VARCHAR(255)
+  first_name: VARCHAR(100)
+  last_name: VARCHAR(100)
+  phone: VARCHAR(20)
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+  status: VARCHAR(20) -- 'active', 'inactive', 'suspended'
+}
+
+ENTITY House {
+  PRIMARY_KEY id: UUID
+  user_id: UUID <<FK>>
+  name: VARCHAR(100)
+  address: VARCHAR(500)
+  city: VARCHAR(100)
+  country: VARCHAR(100)
+  timezone: VARCHAR(50)
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+}
+
+ENTITY DeviceType {
+  PRIMARY_KEY id: UUID
+  name: VARCHAR(100) -- 'thermostat', 'smart_bulb', 'camera'
+  category: VARCHAR(50) -- 'heating', 'lighting', 'security'
+  manufacturer: VARCHAR(100)
+  model: VARCHAR(100)
+  capabilities: JSON -- ['temperature_control', 'on_off', 'brightness']
+  protocol: VARCHAR(50) -- 'mqtt', 'http', 'zigbee'
+  created_at: TIMESTAMP
+}
+
+ENTITY Device {
+  PRIMARY_KEY id: UUID
+  device_type_id: UUID <<FK>>
+  house_id: UUID <<FK>>
+  name: VARCHAR(100)
+  serial_number: VARCHAR(100)
+  location: VARCHAR(200) -- 'living_room', 'bedroom', 'kitchen'
+  status: VARCHAR(20) -- 'online', 'offline', 'error'
+  configuration: JSON -- device-specific settings
+  last_seen: TIMESTAMP
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+}
+
+ENTITY Module {
+  PRIMARY_KEY id: UUID
+  name: VARCHAR(100) -- 'heating', 'lighting', 'security'
+  description: TEXT
+  price_monthly: DECIMAL(10,2)
+  is_active: BOOLEAN
+  created_at: TIMESTAMP
+}
+
+' ========== TELEMETRY & MONITORING ==========
+
+ENTITY TelemetryData {
+  PRIMARY_KEY id: UUID
+  device_id: UUID <<FK>>
+  metric_type: VARCHAR(50) -- 'temperature', 'humidity', 'power_consumption'
+  value: DECIMAL(10,4)
+  unit: VARCHAR(20) -- 'celsius', 'percent', 'watt'
+  recorded_at: TIMESTAMP
+  created_at: TIMESTAMP
+}
+
+ENTITY DeviceEvent {
+  PRIMARY_KEY id: UUID
+  device_id: UUID <<FK>>
+  event_type: VARCHAR(50) -- 'status_change', 'error', 'command_executed'
+  event_data: JSON
+  severity: VARCHAR(20) -- 'info', 'warning', 'error'
+  created_at: TIMESTAMP
+}
+
+' ========== AUTOMATION & SCENARIOS ==========
+
+ENTITY Scenario {
+  PRIMARY_KEY id: UUID
+  user_id: UUID <<FK>>
+  name: VARCHAR(100)
+  description: TEXT
+  trigger_condition: JSON
+  actions: JSON
+  is_active: BOOLEAN
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+}
+
+ENTITY ScenarioExecution {
+  PRIMARY_KEY id: UUID
+  scenario_id: UUID <<FK>>
+  trigger_event: VARCHAR(100)
+  status: VARCHAR(20) -- 'success', 'failed', 'running'
+  executed_at: TIMESTAMP
+  result_data: JSON
+}
+
+' ========== SUBSCRIPTION & ACCESS CONTROL ==========
+
+ENTITY UserModule {
+  PRIMARY_KEY id: UUID
+  user_id: UUID <<FK>>
+  module_id: UUID <<FK>>
+  subscribed_at: TIMESTAMP
+  expires_at: TIMESTAMP
+  status: VARCHAR(20) -- 'active', 'expired', 'cancelled'
+}
+
+ENTITY UserHouseAccess {
+  PRIMARY_KEY id: UUID
+  user_id: UUID <<FK>>
+  house_id: UUID <<FK>>
+  access_level: VARCHAR(20) -- 'owner', 'admin', 'viewer'
+  granted_at: TIMESTAMP
+}
+
+' ========== COMMAND HISTORY ==========
+
+ENTITY DeviceCommand {
+  PRIMARY_KEY id: UUID
+  device_id: UUID <<FK>>
+  command_type: VARCHAR(50) -- 'turn_on', 'turn_off', 'set_temperature'
+  command_data: JSON
+  status: VARCHAR(20) -- 'pending', 'executed', 'failed'
+  executed_at: TIMESTAMP
+  created_at: TIMESTAMP
+}
+
+' ========== RELATIONSHIPS ==========
+
+' User relationships
+User ||--o{ House : owns
+User ||--o{ UserModule : subscribes_to
+User ||--o{ UserHouseAccess : has_access_to
+User ||--o{ Scenario : creates
+
+' House relationships
+House ||--o{ Device : contains
+House }o--|| UserHouseAccess : accessed_by
+
+' DeviceType relationships
+DeviceType ||--o{ Device : classifies
+
+' Device relationships
+Device ||--o{ TelemetryData : generates
+Device ||--o{ DeviceEvent : produces
+Device ||--o{ DeviceCommand : receives
+
+' Module relationships
+Module ||--o{ UserModule : included_in
+
+' Scenario relationships
+Scenario ||--o{ ScenarioExecution : executes
+
+@enduml

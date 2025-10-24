@@ -191,11 +191,55 @@ paths:
         '200':
           description: Устройство удалено
 
-  /camera/metadata/{cameraId}:
+  /signaling/start:
+    post:
+      summary: Запустить сигнализацию
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                signalingId:
+                  type: string
+      responses:
+        '200':
+          description: Сигнализация запущена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignalingStatus'
+
+  /signaling/stop:
+    post:
+      summary: Выключить сигнализацию
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                signalingId:
+                  type: string
+      responses:
+        '200':
+          description: Сигнализация выключена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignalingStatus'
+
+  /signalings/status/{signalingId}:
     get:
-      summary: Получение метаданных камеры
+      summary: Получить статус сигнализации
       parameters:
-        - name: cameraId
+        - name: signalingId
           in: path
           required: true
           schema:
@@ -204,42 +248,15 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: Метаданные камеры
+          description: Статус сигнализации
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  status:
-                    type: string
+                $ref: '#/components/schemas/SignalingStatus'
 
-  /camera/stream/{cameraId}:
-    get:
-      summary: Получение видеопотока камеры (gRPC streaming)
-      parameters:
-        - name: cameraId
-          in: path
-          required: true
-          schema:
-            type: string
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Видеопоток (stream)
-          content:
-            application/grpc:
-              schema:
-                type: string
-                description: gRPC видеопоток
-
-  /camera/devices:
+  /signalings/devices:
     post:
-      summary: Зарегистрировать камеру
+      summary: Зарегистрировать устройство сигнализации
       security:
         - bearerAuth: []
       requestBody:
@@ -249,110 +266,7 @@ paths:
             schema:
               type: object
               properties:
-                cameraId:
-                  type: string
-                deviceName:
-                  type: string
-      responses:
-        '200':
-          description: Камера зарегистрирована
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  cameraId:
-                    type: string
-    delete:
-      summary: Удалить камеру
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: cameraId
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Камера удалена
-
-  /gates/open:
-    post:
-      summary: Открытие ворот
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                gateId:
-                  type: string
-      responses:
-        '200':
-          description: Ворота открыты
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GateStatus'
-
-  /gates/close:
-    post:
-      summary: Закрытие ворот
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                gateId:
-                  type: string
-      responses:
-        '200':
-          description: Ворота закрыты
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GateStatus'
-
-  /gates/status/{gateId}:
-    get:
-      summary: Получить статус ворот
-      parameters:
-        - name: gateId
-          in: path
-          required: true
-          schema:
-            type: string
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Статус ворот
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GateStatus'
-
-  /gates/devices:
-    post:
-      summary: Зарегистрировать устройство ворот
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                gateId:
+                signalingId:
                   type: string
                 deviceName:
                   type: string
@@ -364,14 +278,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  gateId:
+                  signalingId:
                     type: string
     delete:
-      summary: Удалить устройство ворот
+      summary: Удалить устройство сигнализации
       security:
         - bearerAuth: []
       parameters:
-        - name: gateId
+        - name: signalingId
           in: query
           required: true
           schema:
@@ -382,7 +296,7 @@ paths:
 
 components:
   schemas:
-    GateStatus:
+    SignalingStatus:
       type: object
       properties:
         status:
